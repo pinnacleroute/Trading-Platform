@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TradeX — Fintech Trading Platform POC</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg0: #080c12;
+  --bg1: #0d1320;
+  --bg2: #111827;
+  --bg3: #1a2235;
+  --bg4: #212d42;
+  --border: rgba(255,255,255,0.07);
+  --border-bright: rgba(255,255,255,0.13);
+  --text0: #f0f4ff;
+  --text1: #a8b4cc;
+  --text2: #5a6a85;
+  --green: #00d68f;
+  --green-dim: rgba(0,214,143,0.12);
+  --red: #ff4d6d;
+  --red-dim: rgba(255,77,109,0.12);
+  --blue: #3b8bff;
+  --blue-dim: rgba(59,139,255,0.12);
+  --amber: #ffb347;
+  --amber-dim: rgba(255,179,71,0.1);
+  --accent: #3b8bff;
+  --font-mono: 'Space Mono', monospace;
+  --font-body: 'DM Sans', sans-serif;
+  --radius: 8px;
+  --radius-lg: 14px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg0);
+  color: var(--text0);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 2px; }
+
+/* ── TOPBAR ── */
+#topbar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--bg1);
+  border-bottom: 1px solid var(--border);
+  height: 52px;
+  padding: 0 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text0);
+  letter-spacing: -0.5px;
+  margin-right: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 8px var(--blue); animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.nav-tabs { display: flex; gap: 2px; flex: 1; }
+.nav-tab {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .15s;
+  border: none;
+  background: transparent;
+}
+.nav-tab:hover { color: var(--text1); background: var(--bg3); }
+.nav-tab.active { color: var(--text0); background: var(--bg3); }
+
+.topbar-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.market-pill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--green-dim);
+  color: var(--green);
+  border: 1px solid rgba(0,214,143,0.2);
+}
+.user-badge {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg3); border: 1px solid var(--border-bright);
+  border-radius: 8px; padding: 5px 12px 5px 8px;
+  font-size: 13px; cursor: pointer;
+}
+.avatar { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), #8b5cf6); display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700; }
+.notif-btn {
+  width: 32px; height: 32px; border-radius: 8px; background: var(--bg3);
+  border: 1px solid var(--border); display:flex;align-items:center;justify-content:center;
+  cursor: pointer; position: relative; font-size: 14px;
+}
+.notif-badge {
+  position: absolute; top: 4px; right: 4px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--red); border: 1.5px solid var(--bg1);
+}
+
+/* ── LAYOUT ── */
+#app { display: grid; grid-template-columns: 220px 1fr 320px; height: calc(100vh - 52px); overflow: hidden; }
+
+/* ── SIDEBAR ── */
+#sidebar {
+  background: var(--bg1);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sidebar-section { padding: 16px 12px 8px; }
+.sidebar-label { font-size: 10px; font-weight: 600; color: var(--text2); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px; padding: 0 4px; }
+
+.watchlist-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 8px; border-radius: 8px; cursor: pointer;
+  transition: background .12s; margin-bottom: 2px;
+}
+.watchlist-item:hover { background: var(--bg3); }
+.watchlist-item.active { background: var(--bg3); }
+.wl-left { display: flex; flex-direction: column; gap: 2px; }
+.wl-sym { font-size: 13px; font-weight: 600; }
+.wl-name { font-size: 11px; color: var(--text2); }
+.wl-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.wl-price { font-family: var(--font-mono); font-size: 12px; font-weight: 700; }
+.wl-change { font-size: 10px; font-weight: 600; padding: 1px 5px; border-radius: 4px; }
+.up { color: var(--green); }
+.down { color: var(--red); }
+.up-bg { background: var(--green-dim); color: var(--green); }
+.down-bg { background: var(--red-dim); color: var(--red); }
+
+.sidebar-divider { height: 1px; background: var(--border); margin: 4px 12px; }
+
+.portfolio-mini { padding: 12px; }
+.pm-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.pm-label { font-size: 11px; color: var(--text2); }
+.pm-val { font-family: var(--font-mono); font-size: 12px; font-weight: 700; }
+
+/* ── MAIN ── */
+#main { display: flex; flex-direction: column; overflow: hidden; background: var(--bg0); }
+
+/* ticker tape */
+#ticker {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden; height: 32px;
+  display: flex; align-items: center;
+  flex-shrink: 0;
+}
+.ticker-inner {
+  display: flex; gap: 32px; white-space: nowrap;
+  animation: ticker-scroll 40s linear infinite;
+}
+@keyframes ticker-scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.tick-item { font-family: var(--font-mono); font-size: 11px; display: flex; gap: 8px; align-items: center; }
+.tick-sym { color: var(--text1); font-weight: 700; }
+.tick-px { color: var(--text0); }
+
+/* chart area */
+#chart-area { flex: 1; overflow: hidden; display: flex; flex-direction: column; padding: 16px 16px 0; }
+.chart-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; flex-shrink: 0; }
+.chart-symbol { font-size: 22px; font-weight: 700; letter-spacing: -.5px; }
+.chart-price { font-family: var(--font-mono); font-size: 28px; font-weight: 700; }
+.chart-change-lg { font-size: 13px; padding: 3px 10px; border-radius: 6px; margin-top: 4px; display: inline-block; }
+.chart-meta { font-size: 12px; color: var(--text2); margin-top: 4px; }
+.chart-actions { display: flex; gap: 8px; align-items: center; }
+.tf-btn {
+  font-family: var(--font-mono); font-size: 11px; padding: 4px 10px; border-radius: 6px;
+  background: transparent; border: 1px solid var(--border); color: var(--text2); cursor: pointer; transition: all .12s;
+}
+.tf-btn:hover, .tf-btn.active { background: var(--bg3); color: var(--text0); border-color: var(--border-bright); }
+
+#chart-canvas { flex: 1; min-height: 0; }
+canvas { display: block; }
+
+/* order tabs area */
+#order-area {
+  border-top: 1px solid var(--border);
+  background: var(--bg1);
+  height: 220px;
+  flex-shrink: 0;
+  padding: 12px 16px;
+  overflow-y: auto;
+}
+.section-tabs { display: flex; gap: 2px; margin-bottom: 12px; }
+.stab {
+  font-size: 12px; font-weight: 500; color: var(--text2);
+  padding: 4px 12px; border-radius: 6px; cursor: pointer;
+  border: none; background: transparent; transition: all .12s;
+}
+.stab:hover { color: var(--text1); background: var(--bg3); }
+.stab.active { color: var(--text0); background: var(--bg3); }
+
+.orders-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.orders-table th { color: var(--text2); font-weight: 500; text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--border); }
+.orders-table td { padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.03); font-family: var(--font-mono); font-size: 11px; }
+.orders-table tr:hover td { background: var(--bg3); }
+.status-pill { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-family: var(--font-body); font-weight: 600; }
+.status-executed { background: var(--green-dim); color: var(--green); }
+.status-pending { background: var(--amber-dim); color: var(--amber); }
+.status-cancelled { background: rgba(255,255,255,.05); color: var(--text2); }
+
+/* ── RIGHT PANEL ── */
+#right-panel {
+  background: var(--bg1);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-tabs { display: flex; border-bottom: 1px solid var(--border); }
+.ptab {
+  flex: 1; text-align: center; padding: 12px 8px; font-size: 12px; font-weight: 500;
+  color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent;
+  transition: all .15s; border: none; background: transparent;
+}
+.ptab:hover { color: var(--text1); }
+.ptab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.panel-content { flex: 1; overflow-y: auto; padding: 16px; display: none; }
+.panel-content.active { display: block; }
+
+/* order form */
+.order-type-toggle { display: flex; background: var(--bg0); border-radius: 8px; padding: 3px; margin-bottom: 16px; }
+.ott-btn {
+  flex: 1; text-align: center; padding: 7px; border-radius: 6px;
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s;
+  border: none; background: transparent; color: var(--text2);
+}
+.ott-btn.buy.active { background: var(--green-dim); color: var(--green); }
+.ott-btn.sell.active { background: var(--red-dim); color: var(--red); }
+
+.form-group { margin-bottom: 12px; }
+.form-label { font-size: 11px; color: var(--text2); margin-bottom: 5px; display: block; font-weight: 500; }
+.form-input {
+  width: 100%; background: var(--bg0); border: 1px solid var(--border-bright);
+  color: var(--text0); border-radius: 7px; padding: 9px 12px;
+  font-size: 13px; font-family: var(--font-mono); outline: none; transition: border .15s;
+}
+.form-input:focus { border-color: var(--accent); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.order-type-select {
+  width: 100%; background: var(--bg0); border: 1px solid var(--border-bright);
+  color: var(--text1); border-radius: 7px; padding: 9px 12px;
+  font-size: 13px; outline: none; cursor: pointer;
+}
+
+.margin-info { background: var(--bg0); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; }
+.mi-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.mi-label { font-size: 11px; color: var(--text2); }
+.mi-val { font-family: var(--font-mono); font-size: 11px; font-weight: 700; }
+
+.order-btn {
+  width: 100%; padding: 12px; border-radius: 8px; border: none;
+  font-size: 14px; font-weight: 700; cursor: pointer; transition: all .15s;
+  letter-spacing: .02em; font-family: var(--font-body);
+}
+.order-btn.buy { background: var(--green); color: #000; }
+.order-btn.buy:hover { background: #00f0a0; }
+.order-btn.sell { background: var(--red); color: #fff; }
+.order-btn.sell:hover { background: #ff2244; }
+
+/* holdings */
+.holding-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.hr-left .hr-sym { font-size: 14px; font-weight: 600; }
+.hr-left .hr-qty { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.hr-right { text-align: right; }
+.hr-val { font-family: var(--font-mono); font-size: 13px; font-weight: 700; }
+.hr-pnl { font-size: 11px; margin-top: 2px; font-weight: 600; }
+
+/* portfolio summary */
+.pf-summary { background: var(--bg0); border-radius: 10px; padding: 14px; margin-bottom: 16px; }
+.pf-total { font-family: var(--font-mono); font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+.pf-day-change { font-size: 12px; }
+
+.pf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.pf-card {
+  background: var(--bg0); border-radius: 8px; padding: 10px 12px;
+  border: 1px solid var(--border);
+}
+.pf-card-label { font-size: 10px; color: var(--text2); margin-bottom: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
+.pf-card-val { font-family: var(--font-mono); font-size: 14px; font-weight: 700; }
+
+/* allocation donut */
+.alloc-title { font-size: 12px; color: var(--text2); margin-bottom: 10px; font-weight: 500; }
+.alloc-item { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.alloc-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.alloc-name { font-size: 12px; flex: 1; }
+.alloc-pct { font-family: var(--font-mono); font-size: 11px; color: var(--text2); }
+.alloc-bar-bg { height: 3px; background: var(--bg3); border-radius: 2px; flex: 2; overflow: hidden; }
+.alloc-bar-fill { height: 100%; border-radius: 2px; }
+
+/* notifications panel */
+.notif-item { padding: 11px 0; border-bottom: 1px solid var(--border); }
+.notif-row { display: flex; gap: 10px; align-items: flex-start; }
+.notif-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+.notif-body .notif-title { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+.notif-body .notif-sub { font-size: 11px; color: var(--text2); }
+.notif-time { font-size: 10px; color: var(--text2); margin-top: 4px; }
+
+/* order book */
+.ob-header { display: flex; justify-content: space-between; font-size: 10px; color: var(--text2); font-weight: 500; text-transform: uppercase; letter-spacing:.06em; margin-bottom: 8px; }
+.ob-row { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; position: relative; height: 22px; }
+.ob-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; }
+.ob-fill-ask { background: var(--red-dim); right: 0; left: auto; }
+.ob-px { font-family: var(--font-mono); font-size: 11px; flex: 1; z-index: 1; padding: 0 6px; }
+.ob-qty { font-family: var(--font-mono); font-size: 11px; color: var(--text2); z-index: 1; padding: 0 6px; }
+.ob-mid { text-align: center; font-family: var(--font-mono); font-size: 13px; font-weight: 700; padding: 6px 0; }
+
+/* modal */
+#order-modal {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+#order-modal.show { display: flex; }
+.modal-box {
+  background: var(--bg2); border: 1px solid var(--border-bright);
+  border-radius: 16px; padding: 28px; width: 340px;
+  animation: modalIn .2s ease;
+}
+@keyframes modalIn { from{transform:scale(.95);opacity:0} to{transform:scale(1);opacity:1} }
+.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.modal-sub { font-size: 12px; color: var(--text2); margin-bottom: 20px; }
+.modal-detail { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.modal-detail .label { color: var(--text2); }
+.modal-detail .val { font-family: var(--font-mono); font-weight: 600; }
+.modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+.btn-secondary { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border-bright); background: transparent; color: var(--text1); cursor: pointer; font-size: 13px; font-weight: 600; }
+.btn-primary { flex: 2; padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 700; }
+
+/* toast */
+#toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 300;
+  background: var(--bg3); border: 1px solid var(--border-bright);
+  border-radius: 10px; padding: 12px 18px;
+  font-size: 13px; transform: translateY(60px); opacity: 0;
+  transition: all .3s ease; max-width: 300px;
+  display: flex; align-items: center; gap: 10px;
+}
+#toast.show { transform: translateY(0); opacity: 1; }
+.toast-icon { font-size: 16px; }
+
+/* responsive fix */
+@media (max-width: 1100px) {
+  #app { grid-template-columns: 200px 1fr 290px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    TradeX
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('dashboard')">Dashboard</button>
+    <button class="nav-tab" onclick="switchView('portfolio')">Portfolio</button>
+    <button class="nav-tab" onclick="switchView('markets')">Markets</button>
+    <button class="nav-tab" onclick="switchView('orders')">Orders</button>
+    <button class="nav-tab" onclick="switchView('admin')">Admin</button>
+  </div>
+  <div class="topbar-right">
+    <div class="market-pill">● NSE LIVE</div>
+    <div class="notif-btn" onclick="activatePanelTab('notif')">
+      🔔
+      <div class="notif-badge"></div>
+    </div>
+    <div class="user-badge">
+      <div class="avatar">AK</div>
+      <span style="font-size:13px;font-weight:500">Arjun K.</span>
+    </div>
+  </div>
+</div>
+
+<!-- TICKER TAPE -->
+
+<!-- APP LAYOUT -->
+<div id="app">
+  <!-- SIDEBAR / WATCHLIST -->
+  <div id="sidebar">
+    <div id="ticker" style="height:28px;width:100%;overflow:hidden;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div class="ticker-inner" id="ticker-inner"></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Watchlist</div>
+      <div id="watchlist"></div>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Account</div>
+      <div class="portfolio-mini">
+        <div class="pm-row">
+          <span class="pm-label">Available Margin</span>
+          <span class="pm-val" style="color:var(--green)" id="margin-val">₹2,45,000</span>
+        </div>
+        <div class="pm-row">
+          <span class="pm-label">Used Margin</span>
+          <span class="pm-val">₹1,12,450</span>
+        </div>
+        <div class="pm-row">
+          <span class="pm-label">Day P&L</span>
+          <span class="pm-val" id="day-pnl" style="color:var(--green)">+₹4,230</span>
+        </div>
+        <div class="pm-row">
+          <span class="pm-label">Open Positions</span>
+          <span class="pm-val">6</span>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Quick Buy/Sell</div>
+      <div style="padding:4px 0 8px;display:flex;gap:6px;">
+        <button onclick="setOrderSide('BUY')" style="flex:1;padding:8px;border-radius:7px;border:none;background:var(--green-dim);color:var(--green);font-weight:700;font-size:12px;cursor:pointer;">BUY</button>
+        <button onclick="setOrderSide('SELL')" style="flex:1;padding:8px;border-radius:7px;border:none;background:var(--red-dim);color:var(--red);font-weight:700;font-size:12px;cursor:pointer;">SELL</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CHART AREA -->
+  <div id="main">
+    <div id="chart-area">
+      <div class="chart-header">
+        <div>
+          <div style="display:flex;align-items:baseline;gap:12px">
+            <div class="chart-symbol" id="chart-sym">RELIANCE</div>
+            <div style="font-size:13px;color:var(--text2)">NSE · Equity</div>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:12px;margin-top:4px">
+            <div class="chart-price" id="chart-price">₹2,847.60</div>
+            <div class="chart-change-lg up-bg" id="chart-change">+38.50 (+1.37%)</div>
+          </div>
+          <div class="chart-meta" id="chart-meta">O: 2,812.00 · H: 2,861.40 · L: 2,806.75 · V: 4.2M</div>
+        </div>
+        <div class="chart-actions">
+          <div style="display:flex;gap:4px;">
+            <button class="tf-btn" onclick="setTF(this,'1m')">1m</button>
+            <button class="tf-btn" onclick="setTF(this,'5m')">5m</button>
+            <button class="tf-btn active" onclick="setTF(this,'1D')">1D</button>
+            <button class="tf-btn" onclick="setTF(this,'1W')">1W</button>
+            <button class="tf-btn" onclick="setTF(this,'1M')">1M</button>
+          </div>
+          <button onclick="showOrderModal('BUY')" style="padding:7px 16px;border-radius:7px;border:none;background:var(--green);color:#000;font-weight:700;font-size:12px;cursor:pointer;">+ Trade</button>
+        </div>
+      </div>
+      <canvas id="chart-canvas"></canvas>
+    </div>
+
+    <div id="order-area">
+      <div class="section-tabs">
+        <button class="stab active" onclick="switchOrderTab(this,'open-orders')">Open Orders</button>
+        <button class="stab" onclick="switchOrderTab(this,'order-history')">Order History</button>
+        <button class="stab" onclick="switchOrderTab(this,'positions')">Positions</button>
+      </div>
+      <div id="open-orders" class="order-tab-content"></div>
+      <div id="order-history" class="order-tab-content" style="display:none"></div>
+      <div id="positions" class="order-tab-content" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div id="right-panel">
+    <div class="panel-tabs">
+      <button class="ptab active" onclick="switchPanel(this,'order-form')">Order</button>
+      <button class="ptab" onclick="switchPanel(this,'order-book')">Book</button>
+      <button class="ptab" onclick="switchPanel(this,'holdings')">Holdings</button>
+      <button class="ptab" onclick="switchPanel(this,'notif')">Alerts</button>
+    </div>
+
+    <!-- ORDER FORM -->
+    <div class="panel-content active" id="panel-order-form">
+      <div class="order-type-toggle">
+        <button class="ott-btn buy active" id="side-buy" onclick="setOrderSide('BUY')">BUY</button>
+        <button class="ott-btn sell" id="side-sell" onclick="setOrderSide('SELL')">SELL</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Symbol</label>
+        <input type="text" class="form-input" id="order-symbol" value="RELIANCE" readonly>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Order Type</label>
+          <select class="order-type-select" id="order-type" onchange="updateOrderForm()">
+            <option>LIMIT</option>
+            <option>MARKET</option>
+            <option>SL</option>
+            <option>SL-M</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Product</label>
+          <select class="order-type-select">
+            <option>Intraday (MIS)</option>
+            <option>Delivery (CNC)</option>
+            <option>F&O (NRML)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Quantity</label>
+          <input type="number" class="form-input" id="order-qty" value="10" oninput="updateMargin()">
+        </div>
+        <div class="form-group" id="price-group">
+          <label class="form-label">Price (₹)</label>
+          <input type="number" class="form-input" id="order-price" value="2847.60" oninput="updateMargin()">
+        </div>
+      </div>
+      <div class="form-group" id="trigger-group" style="display:none">
+        <label class="form-label">Trigger Price (₹)</label>
+        <input type="number" class="form-input" id="order-trigger" value="2840.00">
+      </div>
+      <div class="margin-info">
+        <div class="mi-row"><span class="mi-label">Estimated Value</span><span class="mi-val" id="est-val">₹28,476</span></div>
+        <div class="mi-row"><span class="mi-label">Margin Required</span><span class="mi-val" id="margin-req">₹7,119</span></div>
+        <div class="mi-row" style="margin-bottom:0"><span class="mi-label">Available Margin</span><span class="mi-val" style="color:var(--green)">₹2,45,000</span></div>
+      </div>
+      <button class="order-btn buy" id="place-order-btn" onclick="showOrderModal()">Buy RELIANCE</button>
+    </div>
+
+    <!-- ORDER BOOK -->
+    <div class="panel-content" id="panel-order-book">
+      <div style="display:flex;gap:4px;margin-bottom:12px;">
+        <div style="flex:1;text-align:center;font-size:11px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Bids</div>
+        <div style="flex:1;text-align:center;font-size:11px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Asks</div>
+      </div>
+      <div id="bid-col" style="margin-bottom:0"></div>
+      <div class="ob-mid" id="ob-mid">₹2,847.60</div>
+      <div id="ask-col"></div>
+      <div style="margin-top:14px;background:var(--bg0);border-radius:8px;padding:10px 12px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:11px;color:var(--text2)"><span>Total Bid Vol</span><span class="up" id="total-bid" style="font-family:var(--font-mono);font-weight:700"></span></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2)"><span>Total Ask Vol</span><span class="down" id="total-ask" style="font-family:var(--font-mono);font-weight:700"></span></div>
+      </div>
+    </div>
+
+    <!-- HOLDINGS -->
+    <div class="panel-content" id="panel-holdings">
+      <div class="pf-summary">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">Portfolio Value</div>
+        <div class="pf-total">₹8,42,315</div>
+        <div class="pf-day-change"><span style="color:var(--green);font-weight:700">+₹12,440 (+1.50%)</span> <span style="color:var(--text2)">today</span></div>
+      </div>
+      <div id="holdings-list"></div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="panel-content" id="panel-notif">
+      <div id="notif-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER CONFIRMATION MODAL -->
+<div id="order-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">Confirm Buy Order</div>
+    <div class="modal-sub">Review your order details</div>
+    <div class="modal-detail"><span class="label">Symbol</span><span class="val" id="modal-sym">RELIANCE</span></div>
+    <div class="modal-detail"><span class="label">Type</span><span class="val" id="modal-type">LIMIT · MIS</span></div>
+    <div class="modal-detail"><span class="label">Quantity</span><span class="val" id="modal-qty">10 shares</span></div>
+    <div class="modal-detail"><span class="label">Price</span><span class="val" id="modal-price">₹2,847.60</span></div>
+    <div class="modal-detail"><span class="label">Total Value</span><span class="val" id="modal-total">₹28,476.00</span></div>
+    <div class="modal-detail"><span class="label">Margin Req.</span><span class="val" id="modal-margin">₹7,119.00</span></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="confirm-btn" onclick="confirmOrder()">Confirm Buy</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast">
+  <span class="toast-icon" id="toast-icon">✅</span>
+  <span id="toast-msg">Order placed successfully</span>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// MOCK DATA
+// ═══════════════════════════════════════════════════
+
+const STOCKS = {
+  RELIANCE: { name: 'Reliance Industries', price: 2847.60, prev: 2809.10, sector: 'Energy' },
+  TCS:      { name: 'TCS', price: 3912.45, prev: 3880.00, sector: 'IT' },
+  HDFCBANK: { name: 'HDFC Bank', price: 1623.80, prev: 1642.50, sector: 'Banking' },
+  INFY:     { name: 'Infosys', price: 1478.25, prev: 1460.00, sector: 'IT' },
+  ICICIBANK:{ name: 'ICICI Bank', price: 1089.55, prev: 1072.00, sector: 'Banking' },
+  WIPRO:    { name: 'Wipro', price: 456.30, prev: 451.00, sector: 'IT' },
+  TATAMOTORS:{ name: 'Tata Motors', price: 892.15, prev: 880.00, sector: 'Auto' },
+  BAJFINANCE:{ name: 'Bajaj Finance', price: 7234.80, prev: 7180.00, sector: 'NBFC' },
+};
+
+const livePrices = {};
+Object.keys(STOCKS).forEach(k => { livePrices[k] = STOCKS[k].price; });
+
+let selectedStock = 'RELIANCE';
+let orderSide = 'BUY';
+
+// ═══════════════════════════════════════════════════
+// PRICE SIMULATION
+// ═══════════════════════════════════════════════════
+
+function randomWalk(price, volatility = 0.0008) {
+  return price * (1 + (Math.random() - 0.5) * volatility);
+}
+
+setInterval(() => {
+  Object.keys(livePrices).forEach(sym => {
+    livePrices[sym] = parseFloat(randomWalk(livePrices[sym]).toFixed(2));
+  });
+  updateWatchlist();
+  updateTicker();
+  updateChartHeader();
+  updateOrderBook();
+}, 800);
+
+// ═══════════════════════════════════════════════════
+// WATCHLIST
+// ═══════════════════════════════════════════════════
+
+function buildWatchlist() {
+  const el = document.getElementById('watchlist');
+  el.innerHTML = '';
+  const syms = ['RELIANCE','TCS','HDFCBANK','INFY','ICICIBANK','WIPRO','TATAMOTORS','BAJFINANCE'];
+  syms.forEach(sym => {
+    const d = document.createElement('div');
+    d.className = 'watchlist-item' + (sym === selectedStock ? ' active' : '');
+    d.id = 'wl-' + sym;
+    d.onclick = () => selectStock(sym);
+    el.appendChild(d);
+  });
+  updateWatchlist();
+}
+
+function updateWatchlist() {
+  const syms = ['RELIANCE','TCS','HDFCBANK','INFY','ICICIBANK','WIPRO','TATAMOTORS','BAJFINANCE'];
+  syms.forEach(sym => {
+    const el = document.getElementById('wl-' + sym);
+    if (!el) return;
+    const price = livePrices[sym];
+    const prev = STOCKS[sym].prev;
+    const chg = ((price - prev) / prev * 100).toFixed(2);
+    const up = price >= prev;
+    el.innerHTML = `
+      <div class="wl-left">
+        <div class="wl-sym">${sym}</div>
+        <div class="wl-name">${STOCKS[sym].sector}</div>
+      </div>
+      <div class="wl-right">
+        <div class="wl-price ${up?'up':'down'}">₹${price.toFixed(2)}</div>
+        <div class="wl-change ${up?'up-bg':'down-bg'}">${up?'+':''}${chg}%</div>
+      </div>`;
+  });
+}
+
+function selectStock(sym) {
+  selectedStock = sym;
+  document.querySelectorAll('.watchlist-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('wl-' + sym);
+  if (el) el.classList.add('active');
+  document.getElementById('chart-sym').textContent = sym;
+  document.getElementById('order-symbol').value = sym;
+  document.getElementById('order-price').value = livePrices[sym].toFixed(2);
+  updateChartHeader();
+  drawChart();
+  updateOrderBook();
+  updateOrderBtn();
+}
+
+// ═══════════════════════════════════════════════════
+// TICKER TAPE
+// ═══════════════════════════════════════════════════
+
+function updateTicker() {
+  const syms = Object.keys(STOCKS);
+  let html = syms.map(sym => {
+    const price = livePrices[sym];
+    const prev = STOCKS[sym].prev;
+    const up = price >= prev;
+    const chg = ((price - prev) / prev * 100).toFixed(2);
+    return `<div class="tick-item"><span class="tick-sym">${sym}</span><span class="tick-px">₹${price.toFixed(2)}</span><span class="${up?'up':'down'}">${up?'▲':'▼'}${Math.abs(chg)}%</span></div>`;
+  }).join('');
+  html = html + html;
+  const el = document.getElementById('ticker-inner');
+  if (el) el.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════
+// CHART
+// ═══════════════════════════════════════════════════
+
+let chartData = [];
+let chartCanvas, chartCtx;
+
+function generateChartData(sym) {
+  const data = [];
+  let price = STOCKS[sym].prev * 0.985;
+  const now = Date.now();
+  for (let i = 120; i >= 0; i--) {
+    price = parseFloat(randomWalk(price, 0.003).toFixed(2));
+    data.push({ t: now - i * 5 * 60000, o: price, h: price * 1.002, l: price * 0.998, c: price, v: Math.floor(Math.random() * 50000 + 10000) });
+  }
+  data[data.length - 1].c = livePrices[sym];
+  return data;
+}
+
+function drawChart() {
+  chartCanvas = document.getElementById('chart-canvas');
+  if (!chartCanvas) return;
+  const parent = chartCanvas.parentElement;
+  chartCanvas.width = parent.clientWidth;
+  chartCanvas.height = parent.clientHeight - 120;
+  chartCtx = chartCanvas.getContext('2d');
+  chartData = generateChartData(selectedStock);
+  renderChart();
+}
+
+function renderChart() {
+  if (!chartCtx || !chartData.length) return;
+  const W = chartCanvas.width, H = chartCanvas.height;
+  const pad = { l: 10, r: 60, t: 10, b: 30 };
+  const prices = chartData.map(d => d.c);
+  const minP = Math.min(...prices) * 0.9985;
+  const maxP = Math.max(...prices) * 1.0015;
+  const toX = i => pad.l + (i / (chartData.length - 1)) * (W - pad.l - pad.r);
+  const toY = p => pad.t + (1 - (p - minP) / (maxP - minP)) * (H - pad.t - pad.b - 40);
+
+  chartCtx.clearRect(0, 0, W, H);
+
+  // Grid
+  chartCtx.strokeStyle = 'rgba(255,255,255,0.05)';
+  chartCtx.lineWidth = 1;
+  for (let i = 0; i < 5; i++) {
+    const y = pad.t + (i / 4) * (H - pad.t - pad.b - 40);
+    chartCtx.beginPath(); chartCtx.moveTo(pad.l, y); chartCtx.lineTo(W - pad.r, y); chartCtx.stroke();
+    const price = maxP - (i / 4) * (maxP - minP);
+    chartCtx.fillStyle = 'rgba(90,106,133,0.8)';
+    chartCtx.font = '10px Space Mono, monospace';
+    chartCtx.textAlign = 'left';
+    chartCtx.fillText('₹' + price.toFixed(0), W - pad.r + 4, y + 4);
+  }
+
+  // Gradient fill
+  const last = chartData[chartData.length - 1].c;
+  const first = chartData[0].c;
+  const up = last >= first;
+  const grad = chartCtx.createLinearGradient(0, pad.t, 0, H - pad.b - 40);
+  grad.addColorStop(0, up ? 'rgba(0,214,143,0.2)' : 'rgba(255,77,109,0.2)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+  chartCtx.beginPath();
+  chartData.forEach((d, i) => {
+    const x = toX(i), y = toY(d.c);
+    i === 0 ? chartCtx.moveTo(x, y) : chartCtx.lineTo(x, y);
+  });
+  const lastX = toX(chartData.length - 1);
+  const baseY = H - pad.b - 40;
+  chartCtx.lineTo(lastX, baseY);
+  chartCtx.lineTo(pad.l, baseY);
+  chartCtx.closePath();
+  chartCtx.fillStyle = grad;
+  chartCtx.fill();
+
+  // Line
+  chartCtx.beginPath();
+  chartCtx.strokeStyle = up ? '#00d68f' : '#ff4d6d';
+  chartCtx.lineWidth = 1.5;
+  chartCtx.lineJoin = 'round';
+  chartData.forEach((d, i) => {
+    const x = toX(i), y = toY(d.c);
+    i === 0 ? chartCtx.moveTo(x, y) : chartCtx.lineTo(x, y);
+  });
+  chartCtx.stroke();
+
+  // Last price line
+  const lastY = toY(chartData[chartData.length - 1].c);
+  chartCtx.beginPath();
+  chartCtx.setLineDash([4, 4]);
+  chartCtx.strokeStyle = up ? 'rgba(0,214,143,0.4)' : 'rgba(255,77,109,0.4)';
+  chartCtx.lineWidth = 1;
+  chartCtx.moveTo(pad.l, lastY); chartCtx.lineTo(W - pad.r, lastY);
+  chartCtx.stroke();
+  chartCtx.setLineDash([]);
+
+  // Volume bars
+  const maxVol = Math.max(...chartData.map(d => d.v));
+  const volH = 30;
+  const volBase = H - pad.b;
+  chartData.forEach((d, i) => {
+    const x = toX(i);
+    const h = (d.v / maxVol) * volH;
+    chartCtx.fillStyle = d.c >= (chartData[i - 1] || d).c ? 'rgba(0,214,143,0.25)' : 'rgba(255,77,109,0.25)';
+    chartCtx.fillRect(x - 1.5, volBase - h, 3, h);
+  });
+}
+
+function updateChartHeader() {
+  const price = livePrices[selectedStock];
+  const prev = STOCKS[selectedStock].prev;
+  const diff = price - prev;
+  const pct = (diff / prev * 100).toFixed(2);
+  const up = diff >= 0;
+  document.getElementById('chart-price').textContent = '₹' + price.toFixed(2);
+  const chgEl = document.getElementById('chart-change');
+  chgEl.textContent = `${up?'+':''}${diff.toFixed(2)} (${up?'+':''}${pct}%)`;
+  chgEl.className = 'chart-change-lg ' + (up ? 'up-bg' : 'down-bg');
+}
+
+// ═══════════════════════════════════════════════════
+// ORDER BOOK
+// ═══════════════════════════════════════════════════
+
+function updateOrderBook() {
+  const mid = livePrices[selectedStock];
+  const bids = [], asks = [];
+  for (let i = 0; i < 6; i++) {
+    const px = mid - (i + 1) * 0.15;
+    const qty = Math.floor(Math.random() * 500 + 50);
+    bids.push({ px: px.toFixed(2), qty });
+  }
+  for (let i = 0; i < 6; i++) {
+    const px = mid + (i + 1) * 0.15;
+    const qty = Math.floor(Math.random() * 500 + 50);
+    asks.push({ px: px.toFixed(2), qty });
+  }
+
+  const maxQty = Math.max(...bids.map(b => b.qty), ...asks.map(a => a.qty));
+  const totalBid = bids.reduce((s, b) => s + b.qty, 0);
+  const totalAsk = asks.reduce((s, a) => s + a.qty, 0);
+
+  document.getElementById('bid-col').innerHTML = bids.map(b => {
+    const w = (b.qty / maxQty * 100).toFixed(0);
+    return `<div class="ob-row"><div class="ob-fill" style="width:${w}%;background:var(--green-dim)"></div><span class="ob-px up">${b.px}</span><span class="ob-qty">${b.qty}</span></div>`;
+  }).join('');
+
+  document.getElementById('ask-col').innerHTML = asks.map(a => {
+    const w = (a.qty / maxQty * 100).toFixed(0);
+    return `<div class="ob-row"><div class="ob-fill ob-fill-ask" style="width:${w}%;"></div><span class="ob-px down">${a.px}</span><span class="ob-qty">${a.qty}</span></div>`;
+  }).join('');
+
+  document.getElementById('ob-mid').textContent = '₹' + mid.toFixed(2);
+  document.getElementById('total-bid').textContent = totalBid.toLocaleString();
+  document.getElementById('total-ask').textContent = totalAsk.toLocaleString();
+}
+
+// ═══════════════════════════════════════════════════
+// HOLDINGS
+// ═══════════════════════════════════════════════════
+
+const holdings = [
+  { sym: 'RELIANCE', qty: 50, avg: 2720.00 },
+  { sym: 'TCS',      qty: 20, avg: 3750.00 },
+  { sym: 'HDFCBANK', qty: 80, avg: 1580.00 },
+  { sym: 'INFY',     qty: 60, avg: 1420.00 },
+  { sym: 'WIPRO',    qty: 200, avg: 440.00 },
+  { sym: 'TATAMOTORS', qty: 40, avg: 860.00 },
+];
+
+function buildHoldings() {
+  const el = document.getElementById('holdings-list');
+  el.innerHTML = holdings.map(h => {
+    const cur = livePrices[h.sym] || h.avg;
+    const pnl = (cur - h.avg) * h.qty;
+    const pnlPct = ((cur - h.avg) / h.avg * 100).toFixed(2);
+    const up = pnl >= 0;
+    return `<div class="holding-row">
+      <div class="hr-left">
+        <div class="hr-sym">${h.sym}</div>
+        <div class="hr-qty">${h.qty} shares · Avg ₹${h.avg.toFixed(0)}</div>
+      </div>
+      <div class="hr-right">
+        <div class="hr-val">₹${(cur * h.qty).toLocaleString('en-IN',{maximumFractionDigits:0})}</div>
+        <div class="hr-pnl ${up?'up':'down'}">${up?'+':'-'}₹${Math.abs(pnl).toFixed(0)} (${up?'+':''}${pnlPct}%)</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+setInterval(buildHoldings, 2000);
+
+// ═══════════════════════════════════════════════════
+// NOTIFICATIONS
+// ═══════════════════════════════════════════════════
+
+const notifications = [
+  { icon: '✅', bg: 'var(--green-dim)', title: 'Order Executed', sub: 'RELIANCE 50 qty @ ₹2,812.00', time: '2 min ago' },
+  { icon: '📊', bg: 'var(--blue-dim)', title: 'Price Alert', sub: 'TCS crossed ₹3,900', time: '8 min ago' },
+  { icon: '⚠️', bg: 'var(--amber-dim)', title: 'Margin Alert', sub: 'Portfolio margin utilised >60%', time: '15 min ago' },
+  { icon: '✅', bg: 'var(--green-dim)', title: 'Order Executed', sub: 'INFY 60 qty @ ₹1,422.00', time: '22 min ago' },
+  { icon: '❌', bg: 'var(--red-dim)', title: 'Order Rejected', sub: 'HDFCBANK SL order — price gap', time: '1 hr ago' },
+  { icon: '💰', bg: 'var(--green-dim)', title: 'Funds Added', sub: '₹50,000 credited via UPI', time: '2 hr ago' },
+  { icon: '📋', bg: 'rgba(59,139,255,.12)', title: 'KYC Verified', sub: 'Your account is fully verified', time: 'Yesterday' },
+];
+
+function buildNotifications() {
+  document.getElementById('notif-list').innerHTML = notifications.map(n => `
+    <div class="notif-item">
+      <div class="notif-row">
+        <div class="notif-icon" style="background:${n.bg}">${n.icon}</div>
+        <div class="notif-body">
+          <div class="notif-title">${n.title}</div>
+          <div class="notif-sub">${n.sub}</div>
+          <div class="notif-time">${n.time}</div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// ORDER TABLES
+// ═══════════════════════════════════════════════════
+
+const openOrdersData = [
+  { id: 'ORD00234', sym: 'BAJFINANCE', side: 'BUY', qty: 5, price: '7200.00', type: 'LIMIT', status: 'PENDING' },
+  { id: 'ORD00233', sym: 'HDFCBANK', side: 'SELL', qty: 20, price: '1630.00', type: 'SL', status: 'PENDING' },
+];
+
+const historyData = [
+  { id: 'ORD00232', sym: 'RELIANCE', side: 'BUY', qty: 50, price: '2812.00', type: 'LIMIT', status: 'EXECUTED', time: '09:42 AM' },
+  { id: 'ORD00231', sym: 'INFY', side: 'BUY', qty: 60, price: '1422.00', type: 'MARKET', status: 'EXECUTED', time: '09:38 AM' },
+  { id: 'ORD00230', sym: 'TCS', side: 'SELL', qty: 10, price: '3920.00', type: 'LIMIT', status: 'CANCELLED', time: '09:31 AM' },
+  { id: 'ORD00229', sym: 'WIPRO', side: 'BUY', qty: 200, price: '440.00', type: 'LIMIT', status: 'EXECUTED', time: 'Yesterday' },
+  { id: 'ORD00228', sym: 'TATAMOTORS', side: 'BUY', qty: 40, price: '858.00', type: 'LIMIT', status: 'EXECUTED', time: 'Yesterday' },
+];
+
+const positionsData = [
+  { sym: 'NIFTY24DEC', side: 'LONG', qty: 1, entry: '24200.00', ltp: '24318.50', pnl: '+₹593', type: 'F&O' },
+  { sym: 'BANKNIFTY', side: 'SHORT', qty: 2, entry: '52100.00', ltp: '51940.00', pnl: '+₹160', type: 'F&O' },
+  { sym: 'RELIANCE', side: 'LONG', qty: 50, entry: '2812.00', ltp: livePrices['RELIANCE']?.toFixed(2), pnl: '', type: 'EQ' },
+];
+
+function renderOrderTable(data, columns) {
+  return `<table class="orders-table">
+    <thead><tr>${columns.map(c => `<th>${c.label}</th>`).join('')}</tr></thead>
+    <tbody>${data.map(row => `<tr>${columns.map(c => `<td>${c.render(row)}</td>`).join('')}</tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function buildOrderTables() {
+  const statusPill = (s) => {
+    const cls = s === 'EXECUTED' ? 'status-executed' : s === 'PENDING' ? 'status-pending' : 'status-cancelled';
+    return `<span class="status-pill ${cls}">${s}</span>`;
+  };
+  const sideBadge = (s) => `<span style="color:${s==='BUY'?'var(--green)':'var(--red)'};font-weight:700">${s}</span>`;
+
+  document.getElementById('open-orders').innerHTML = renderOrderTable(openOrdersData, [
+    { label: 'Order ID', render: r => r.id },
+    { label: 'Symbol', render: r => `<b>${r.sym}</b>` },
+    { label: 'Side', render: r => sideBadge(r.side) },
+    { label: 'Qty', render: r => r.qty },
+    { label: 'Price', render: r => '₹' + r.price },
+    { label: 'Type', render: r => r.type },
+    { label: 'Status', render: r => statusPill(r.status) },
+    { label: '', render: r => `<span onclick="cancelOrder('${r.id}')" style="cursor:pointer;color:var(--red);font-size:11px;font-family:var(--font-body)">Cancel</span>` },
+  ]);
+
+  document.getElementById('order-history').innerHTML = renderOrderTable(historyData, [
+    { label: 'Order ID', render: r => r.id },
+    { label: 'Symbol', render: r => `<b>${r.sym}</b>` },
+    { label: 'Side', render: r => sideBadge(r.side) },
+    { label: 'Qty', render: r => r.qty },
+    { label: 'Price', render: r => '₹' + r.price },
+    { label: 'Type', render: r => r.type },
+    { label: 'Status', render: r => statusPill(r.status) },
+    { label: 'Time', render: r => r.time },
+  ]);
+
+  positionsData[2].ltp = livePrices['RELIANCE']?.toFixed(2) || '2847.60';
+  const rPnl = ((parseFloat(positionsData[2].ltp) - 2812) * 50).toFixed(0);
+  positionsData[2].pnl = (rPnl >= 0 ? '+' : '') + '₹' + rPnl;
+
+  document.getElementById('positions').innerHTML = renderOrderTable(positionsData, [
+    { label: 'Symbol', render: r => `<b>${r.sym}</b>` },
+    { label: 'Type', render: r => r.type },
+    { label: 'Side', render: r => `<span style="color:${r.side==='LONG'?'var(--green)':'var(--red)'}">${r.side}</span>` },
+    { label: 'Qty', render: r => r.qty },
+    { label: 'Entry', render: r => '₹' + r.entry },
+    { label: 'LTP', render: r => '₹' + r.ltp },
+    { label: 'P&L', render: r => `<span class="${r.pnl.startsWith('+')?'up':'down'}">${r.pnl}</span>` },
+  ]);
+}
+
+setInterval(buildOrderTables, 3000);
+
+// ═══════════════════════════════════════════════════
+// ORDER FORM LOGIC
+// ═══════════════════════════════════════════════════
+
+function setOrderSide(side) {
+  orderSide = side;
+  document.getElementById('side-buy').classList.toggle('active', side === 'BUY');
+  document.getElementById('side-sell').classList.toggle('active', side === 'SELL');
+  updateOrderBtn();
+  activatePanelTab('order-form');
+}
+
+function updateOrderBtn() {
+  const btn = document.getElementById('place-order-btn');
+  btn.className = 'order-btn ' + (orderSide === 'BUY' ? 'buy' : 'sell');
+  btn.textContent = (orderSide === 'BUY' ? 'Buy ' : 'Sell ') + selectedStock;
+}
+
+function updateOrderForm() {
+  const type = document.getElementById('order-type').value;
+  document.getElementById('trigger-group').style.display = (type === 'SL' || type === 'SL-M') ? 'block' : 'none';
+  document.getElementById('price-group').style.display = type === 'SL-M' ? 'none' : 'block';
+  updateMargin();
+}
+
+function updateMargin() {
+  const qty = parseFloat(document.getElementById('order-qty').value) || 0;
+  const price = parseFloat(document.getElementById('order-price').value) || livePrices[selectedStock];
+  const val = qty * price;
+  const margin = val * 0.25;
+  document.getElementById('est-val').textContent = '₹' + val.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+  document.getElementById('margin-req').textContent = '₹' + margin.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+}
+
+// ═══════════════════════════════════════════════════
+// ORDER MODAL
+// ═══════════════════════════════════════════════════
+
+function showOrderModal(forceSide) {
+  if (forceSide) orderSide = forceSide;
+  const sym = document.getElementById('order-symbol').value || selectedStock;
+  const qty = document.getElementById('order-qty').value || 1;
+  const price = document.getElementById('order-price').value || livePrices[selectedStock].toFixed(2);
+  const type = document.getElementById('order-type').value;
+  const val = (qty * parseFloat(price)).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+  const margin = (qty * parseFloat(price) * 0.25).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+  const isBuy = orderSide === 'BUY';
+
+  document.getElementById('modal-title').textContent = `Confirm ${orderSide} Order`;
+  document.getElementById('modal-title').style.color = isBuy ? 'var(--green)' : 'var(--red)';
+  document.getElementById('modal-sym').textContent = sym;
+  document.getElementById('modal-type').textContent = type + ' · MIS';
+  document.getElementById('modal-qty').textContent = qty + ' shares';
+  document.getElementById('modal-price').textContent = '₹' + parseFloat(price).toFixed(2);
+  document.getElementById('modal-total').textContent = '₹' + val;
+  document.getElementById('modal-margin').textContent = '₹' + margin;
+
+  const btn = document.getElementById('confirm-btn');
+  btn.textContent = 'Confirm ' + (isBuy ? 'Buy' : 'Sell');
+  btn.style.background = isBuy ? 'var(--green)' : 'var(--red)';
+  btn.style.color = isBuy ? '#000' : '#fff';
+
+  document.getElementById('order-modal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('order-modal').classList.remove('show');
+}
+
+function confirmOrder() {
+  closeModal();
+  const isBuy = orderSide === 'BUY';
+  const sym = document.getElementById('order-symbol').value || selectedStock;
+  const qty = document.getElementById('order-qty').value;
+  const price = document.getElementById('order-price').value;
+
+  // Add to history mock
+  const newOrder = {
+    id: 'ORD' + (Math.floor(Math.random() * 90000) + 10000),
+    sym, side: orderSide, qty, price: parseFloat(price).toFixed(2),
+    type: document.getElementById('order-type').value,
+    status: 'EXECUTED', time: 'Just now'
+  };
+  historyData.unshift(newOrder);
+  buildOrderTables();
+
+  showToast(isBuy ? '✅' : '✅', `${orderSide} ${sym} ${qty} qty @ ₹${parseFloat(price).toFixed(2)} — Executed`);
+}
+
+function cancelOrder(id) {
+  const idx = openOrdersData.findIndex(o => o.id === id);
+  if (idx !== -1) {
+    const ord = openOrdersData.splice(idx, 1)[0];
+    ord.status = 'CANCELLED';
+    historyData.unshift({ ...ord, time: 'Just now' });
+    buildOrderTables();
+    showToast('❌', `Order ${id} cancelled`);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════
+
+function showToast(icon, msg) {
+  document.getElementById('toast-icon').textContent = icon;
+  document.getElementById('toast-msg').textContent = msg;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ═══════════════════════════════════════════════════
+// PANEL / TAB SWITCHING
+// ═══════════════════════════════════════════════════
+
+function switchPanel(btn, id) {
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.panel-content').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+}
+
+function activatePanelTab(id) {
+  const tabs = document.querySelectorAll('.ptab');
+  const contents = document.querySelectorAll('.panel-content');
+  contents.forEach(p => p.classList.remove('active'));
+  tabs.forEach(t => t.classList.remove('active'));
+  const target = document.getElementById('panel-' + id);
+  if (target) {
+    target.classList.add('active');
+    const idx = ['order-form','order-book','holdings','notif'].indexOf(id);
+    if (tabs[idx]) tabs[idx].classList.add('active');
+  }
+}
+
+function switchOrderTab(btn, id) {
+  document.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.order-tab-content').forEach(el => el.style.display = 'none');
+  document.getElementById(id).style.display = 'block';
+}
+
+function setTF(btn, tf) {
+  document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  drawChart();
+}
+
+function switchView(v) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  showToast('📊', 'Switched to ' + v.charAt(0).toUpperCase() + v.slice(1) + ' view');
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+
+window.addEventListener('load', () => {
+  buildWatchlist();
+  updateTicker();
+  drawChart();
+  updateOrderBook();
+  buildHoldings();
+  buildNotifications();
+  buildOrderTables();
+  updateMargin();
+});
+
+window.addEventListener('resize', drawChart);
+
+// live chart update every 3s
+setInterval(() => {
+  if (chartData.length > 0) {
+    const last = chartData[chartData.length - 1];
+    const newPoint = { ...last, t: Date.now(), c: livePrices[selectedStock] };
+    chartData.push(newPoint);
+    if (chartData.length > 150) chartData.shift();
+    renderChart();
+  }
+}, 3000);
+</script>
+</body>
+</html>
